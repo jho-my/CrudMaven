@@ -5,10 +5,14 @@
 package test;
 
 import Datos.ClienteDao;
+import Datos.Conexion1;
 import Domain.Cliente;
 import java.awt.HeadlessException;
 import java.util.List;
 import javax.swing.JOptionPane;
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -22,10 +26,14 @@ public class frmtestcliente extends javax.swing.JFrame {
     ClienteDao clienteDao = new ClienteDao();
     Cliente cliente = new Cliente();
 
+    //variable de tipo conexoin
+    Connection conexion = null;
+    Conexion1 instanciaMSQL = Conexion1.getInstancia();
+
     public frmtestcliente() {
         initComponents();
         this.setTitle("Control de Clientes");
-        this.setLocationRelativeTo(this);
+        this.setLocationRelativeTo(null);
         listarDatos();
     }
 
@@ -40,6 +48,12 @@ public class frmtestcliente extends javax.swing.JFrame {
             double saldo;
             try {
                 //captamos los datos
+                conexion = instanciaMSQL.ConectarBd();
+
+                //si esta conexion 
+                if (conexion.getAutoCommit()) {
+                    conexion.setAutoCommit(false);
+                }
                 nombre = txtNombre.getText().trim();
                 apellido = txtApellido.getText().trim();
                 email = txtEmail.getText().trim();
@@ -50,22 +64,78 @@ public class frmtestcliente extends javax.swing.JFrame {
 
                 clienteDao.insertar(cliente);
 
+                //hacemos un comit
+                conexion.commit();
                 JOptionPane.showMessageDialog(rootPane, "Cliente => " + nombre + " Registrado");
 
                 this.limpiarCampos();
-            } catch (HeadlessException | NumberFormatException e) {
+
+                listarDatos();
+            } catch (HeadlessException | NumberFormatException | SQLException e) {
                 JOptionPane.showMessageDialog(rootPane, "Error en Boton Registrar => " + e.getMessage());
+
+                try {
+                    //retresedemos y evitar esos errores que han ocurrido
+                    conexion.rollback();
+                } catch (SQLException ex) {
+                    System.out.println("Error en boton registrar => " + e.getMessage());
+                }
             }
         }
     }
 
+    private boolean BdDatos() {
+        try {
+            conexion = instanciaMSQL.ConectarBd();
+            //si esta conexion podemos que autocommit sea falso por defecto
+            if (conexion.getAutoCommit()) {
+                conexion.setAutoCommit(false);
+            }
+
+            String consulta = "Select * from clientes";
+
+            PreparedStatement consultapre = conexion.prepareStatement(consulta);
+            ResultSet seleccion = consultapre.executeQuery();
+
+            return seleccion.next();
+
+        } catch (SQLException e) {
+            System.out.println("Error al confirmar si hay datos => " + e.getMessage());
+        } finally {
+            instanciaMSQL.Desconectar(conexion);
+        }
+        return false;
+
+    }
+
     private void listarDatos() {
-        List<Cliente> clientes = clienteDao.listar();
-        jTextArea1.setText("");
-        for (Cliente cliente1 : clientes) {
-            jTextArea1.append(cliente1.toString());
-            jTextArea1.append("");
-            jTextArea1.append("");
+        if (BdDatos() == false) {
+            JOptionPane.showMessageDialog(rootPane, "La base de Datos no tiene Informacion a mostrar");
+        } else {
+            try {
+                conexion = instanciaMSQL.ConectarBd();
+                //si esta conexion podemos que autocommit sea falso por defecto
+                if (conexion.getAutoCommit()) {
+                    conexion.setAutoCommit(false);
+                }
+                List<Cliente> clientes = clienteDao.listar();
+                jTextArea1.setText("");
+                for (Cliente cliente1 : clientes) {
+                    jTextArea1.append(cliente1.toString());
+                    jTextArea1.append("");
+                    jTextArea1.append("");
+                }
+
+                //hacemos una confirmacion
+                conexion.commit();
+            } catch (SQLException ex) {
+                System.out.println("Error en boton listar => " + ex.getMessage());
+                try {
+                    conexion.rollback();
+                } catch (SQLException ex1) {
+                    System.out.println("Error en boton listar => " + ex1.getMessage());
+                }
+            }
         }
     }
 
@@ -91,35 +161,59 @@ public class frmtestcliente extends javax.swing.JFrame {
 
     private void Eliminar() {
         int id;
-        try {
-            if (txtID.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(rootPane, "Por favor digita el ID");
-            } else {
+
+        if (txtID.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(rootPane, "Por favor digita el ID");
+        } else {
+            try {
+                conexion = instanciaMSQL.ConectarBd();
+
+                //si esta conexion 
+                if (conexion.getAutoCommit()) {
+                    conexion.setAutoCommit(false);
+                }
+
                 id = Integer.parseInt(txtID.getText().trim());
                 cliente = new Cliente(id);
 
                 //llamamos al metodo
                 clienteDao.Eliminar(cliente);
+
+                //hace un comit osea una confirmacion
+                conexion.commit();
                 JOptionPane.showMessageDialog(rootPane, "Cliente con el ID => " + id
                         + "\nEliminado");
-                listarDatos();
+
                 txtID.setText(null);
+
+                // listarDatos();
+            } catch (HeadlessException | NumberFormatException | SQLException e) {
+                System.out.println("Error al eliminar => " + e.getMessage());
+                try {
+                    conexion.rollback();
+                } catch (SQLException ex) {
+                    System.out.println("Error en Eliminar => " + e.getMessage());
+                }
             }
-        } catch (HeadlessException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(rootPane, """
-                                                    Error en Boton Eliminar 
-                                                     """ + e.getMessage());
         }
 
     }
 
     private void modificar() {
-        try {
-            if (txtID.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(rootPane, "Por favor Ingresar el ID a modificar");
-            } else if (comprobarCampos()) {
-                JOptionPane.showMessageDialog(rootPane, "Por favor completar los campos");
-            } else {
+
+        if (txtID.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(rootPane, "Por favor Ingresar el ID a modificar");
+        } else if (comprobarCampos()) {
+            JOptionPane.showMessageDialog(rootPane, "Por favor completar los campos");
+        } else {
+            try {
+                //captamos los datos
+                conexion = instanciaMSQL.ConectarBd();
+
+                //si esta conexion 
+                if (conexion.getAutoCommit()) {
+                    conexion.setAutoCommit(false);
+                }
                 int id;
                 String nombre;
                 String apellido;
@@ -137,14 +231,22 @@ public class frmtestcliente extends javax.swing.JFrame {
 
                 cliente = new Cliente(id, nombre, apellido, email, telefono, saldo);
                 clienteDao.modificar(cliente);
+
+                conexion.commit();
                 JOptionPane.showMessageDialog(rootPane, "Cliente con el ID: " + id + "\n Modificado");
-                listarDatos();
+
                 limpiarCampos();
                 // btnRegistrar.setVisible(false);
 
+                listarDatos();
+            } catch (HeadlessException | NumberFormatException | SQLException e) {
+                JOptionPane.showMessageDialog(rootPane, "Error en boton Modificar => " + e.getMessage());
+                try {
+                    conexion.rollback();
+                } catch (SQLException ex) {
+                    System.out.println("Error en modificar => " + e.getMessage());
+                }
             }
-        } catch (HeadlessException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(rootPane, "Error en => " + e.getMessage());
         }
     }
 
@@ -367,6 +469,7 @@ public class frmtestcliente extends javax.swing.JFrame {
         // TODO add your handling code here:
         registrarDatos();
 
+
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
     private void btnConsultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultarActionPerformed
@@ -385,6 +488,7 @@ public class frmtestcliente extends javax.swing.JFrame {
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         // TODO add your handling code here:
         Eliminar();
+        listarDatos();
         //btnRegistrar.setVisible(true);
     }//GEN-LAST:event_btnEliminarActionPerformed
 

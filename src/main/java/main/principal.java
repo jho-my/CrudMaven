@@ -5,11 +5,6 @@
 package main;
 
 import test.frmtestcliente;
-
-/**
- *
- * @author User
- */
 public class principal {
     public static void main(String[] args) {
         frmtestcliente v = new frmtestcliente();

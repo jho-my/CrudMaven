@@ -7,19 +7,23 @@ import java.util.List;
 
 public class ClienteDao {
 
-    /*
-    nombre varchar (50),
-    apellido varchar(50),
-   email varchar (50),
-   telefono varchar (50),
-     saldo double
-     */
+    private Connection conexionTransacional;
+
     Conexion1 instanciaMysql = Conexion1.getInstancia();
 
     private static final String SQL_SELECT = "select * from clientes";
     private static final String SQL_INSERT = "insert into clientes (nombre,apellido,email,telefono,saldo) values (?,?,?,?,?)";
     private static final String SQL_UPDATE = "update clientes set nombre = ?, apellido = ?, email = ?, telefono = ?, saldo = ? where id = ? ";
     private static final String SQL_DELETE = "delete from clientes where id = ?";
+
+    //insertamos un constructor de tipo cliente dao
+    public ClienteDao() {
+
+    }
+
+    public ClienteDao(Connection connexionTransacional) {
+        this.conexionTransacional = connexionTransacional;
+    }
 
     //metodo para listar los datos
     public List<Cliente> listar() {
@@ -30,7 +34,9 @@ public class ClienteDao {
         List<Cliente> clientes = new ArrayList<>();
         Cliente cliente;
         try {
-            conexion = instanciaMysql.ConectarBd();
+            //Conexion normal
+            //conexion = instanciaMysql.ConectarBd();
+            conexion = this.conexionTransacional != null ? this.conexionTransacional : instanciaMysql.ConectarBd();
 
             consultaPreparada = conexion.prepareStatement(SQL_SELECT);
             resultado = consultaPreparada.executeQuery();
@@ -51,7 +57,10 @@ public class ClienteDao {
         } finally { //finalmente cerramos las variables
             instanciaMysql.cerrarResultado(resultado);
             instanciaMysql.CerrarStemenyt(consultaPreparada);
-            instanciaMysql.Desconectar(conexion);
+            //instanciaMysql.Desconectar(conexion);
+            if (this.conexionTransacional == null) {
+                instanciaMysql.Desconectar(conexion);
+            }
         }
         return clientes;
     }
@@ -62,7 +71,7 @@ public class ClienteDao {
         PreparedStatement consultaPreparada = null;
         int registros = 0;
         try {
-            conexion = instanciaMysql.ConectarBd();
+            conexion = this.conexionTransacional != null ? this.conexionTransacional : instanciaMysql.ConectarBd();
             consultaPreparada = conexion.prepareStatement(SQL_INSERT);
             consultaPreparada.setString(1, cliente.getNombre());
             consultaPreparada.setString(2, cliente.getApellido());
@@ -75,8 +84,10 @@ public class ClienteDao {
             System.out.println("Error en insertar => " + e.getMessage());
         } finally {
             instanciaMysql.CerrarStemenyt(consultaPreparada);
-            instanciaMysql.Desconectar(conexion);
-
+            // instanciaMysql.Desconectar(conexion);
+            if (this.conexionTransacional == null) {
+                instanciaMysql.Desconectar(conexion);
+            }
         }
         return registros;
     }
@@ -87,7 +98,8 @@ public class ClienteDao {
         PreparedStatement consultaPreparada = null;
         int registros = 0;
         try {
-            conexion = instanciaMysql.ConectarBd();
+            conexion = this.conexionTransacional != null ? this.conexionTransacional : instanciaMysql.ConectarBd();
+
             consultaPreparada = conexion.prepareStatement(SQL_UPDATE);
             consultaPreparada.setString(1, cliente.getNombre());
             consultaPreparada.setString(2, cliente.getApellido());
@@ -101,7 +113,10 @@ public class ClienteDao {
             System.out.println("Error en modificar => " + e.getMessage());
         } finally {
             instanciaMysql.CerrarStemenyt(consultaPreparada);
-            instanciaMysql.Desconectar(conexion);
+            // instanciaMysql.Desconectar(conexion);
+            if (this.conexionTransacional == null) {
+                instanciaMysql.Desconectar(conexion);
+            }
         }
         return registros;
     }
@@ -111,9 +126,10 @@ public class ClienteDao {
         Connection conexion = null;
         PreparedStatement consultaPreparada = null;
         int registros = 0;
-        
+
         try {
-            conexion = instanciaMysql.ConectarBd();
+            conexion = this.conexionTransacional != null ? this.conexionTransacional : instanciaMysql.ConectarBd();
+
             consultaPreparada = conexion.prepareStatement(SQL_DELETE);
             consultaPreparada.setInt(1, cliente.getIdCliente());
             registros = consultaPreparada.executeUpdate();
@@ -123,7 +139,10 @@ public class ClienteDao {
             System.out.println("Error en Eliminar => " + e.getMessage());
         } finally {
             instanciaMysql.CerrarStemenyt(consultaPreparada);
-            instanciaMysql.Desconectar(conexion);
+            //instanciaMysql.Desconectar(conexion);
+            if (this.conexionTransacional == null) {
+                instanciaMysql.Desconectar(conexion);
+            }
         }
         return registros;
     }
