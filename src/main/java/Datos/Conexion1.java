@@ -1,12 +1,6 @@
 package Datos;
 
-import com.mysql.cj.xdevapi.Result;
 import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.sql.DataSource;
-import org.apache.commons.dbcp2.*;
-
 public class Conexion1 {
 
     private Conexion1() {
@@ -29,7 +23,7 @@ public class Conexion1 {
 //    }
 
     public Connection ConectarBd() throws SQLException {
-
+        System.out.println("Conectado");
         return DriverManager.getConnection(url, user, pasword);
 
     }
@@ -37,7 +31,7 @@ public class Conexion1 {
     public void Desconectar(Connection conexion) {
         try {
             conexion.close();
-            System.out.println("Se desconecto de la base de datos");
+            System.out.println("Desconectado");
         } catch (SQLException e) {
             System.out.println("ERROR AL DESCONECTAR: " + e.getMessage());
         }
