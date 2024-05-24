@@ -1,4 +1,3 @@
-
 package test;
 
 import Datos.ClienteDao;
@@ -24,14 +23,14 @@ public class frmtestcliente extends javax.swing.JFrame {
     //variable de tipo conexoin
     Connection conexion = null;
     Conexion1 instanciaMSQL = Conexion1.getInstancia();
-
+    
     public frmtestcliente() {
         initComponents();
         this.setTitle("Control de Clientes");
         this.setLocationRelativeTo(null);
         listarDatos();
     }
-
+    
     private void registrarDatos() {
         if (comprobarCampos() == true) {
             JOptionPane.showMessageDialog(rootPane, "Por favor completar Los Campos");
@@ -54,21 +53,21 @@ public class frmtestcliente extends javax.swing.JFrame {
                 email = txtEmail.getText().trim();
                 telefono = txtTelefono.getText().trim();
                 saldo = Double.parseDouble(txtSaldo.getText().trim());
-
+                
                 cliente = new Cliente(nombre, apellido, email, telefono, saldo);
-
+                
                 clienteDao.insertar(cliente);
 
                 //hacemos un comit
                 conexion.commit();
                 JOptionPane.showMessageDialog(rootPane, "Cliente => " + nombre + " Registrado");
-
+                
                 this.limpiarCampos();
-
+                
                 listarDatos();
             } catch (HeadlessException | NumberFormatException | SQLException e) {
                 JOptionPane.showMessageDialog(rootPane, "Error en Boton Registrar => " + e.getMessage());
-
+                
                 try {
                     //retresedemos y evitar esos errores que han ocurrido
                     conexion.rollback();
@@ -78,7 +77,7 @@ public class frmtestcliente extends javax.swing.JFrame {
             }
         }
     }
-
+    
     private boolean BdDatos() {
         try {
             conexion = instanciaMSQL.ConectarBd();
@@ -86,23 +85,23 @@ public class frmtestcliente extends javax.swing.JFrame {
             if (conexion.getAutoCommit()) {
                 conexion.setAutoCommit(false);
             }
-
+            
             String consulta = "Select * from clientes";
-
+            
             PreparedStatement consultapre = conexion.prepareStatement(consulta);
             ResultSet seleccion = consultapre.executeQuery();
-
+            
             return seleccion.next();
-
+            
         } catch (SQLException e) {
             System.out.println("Error al confirmar si hay datos => " + e.getMessage());
         } finally {
             instanciaMSQL.Desconectar(conexion);
         }
         return false;
-
+        
     }
-
+    
     private void listarDatos() {
         if (BdDatos() == false) {
             JOptionPane.showMessageDialog(rootPane, "La base de Datos no tiene Informacion a mostrar");
@@ -133,16 +132,16 @@ public class frmtestcliente extends javax.swing.JFrame {
             }
         }
     }
-
+    
     private boolean comprobarCampos() {
         return txtNombre.getText().trim().isEmpty()
                 || txtApellido.getText().trim().isEmpty()
                 || txtEmail.getText().trim().isEmpty()
                 || txtSaldo.getText().trim().isEmpty()
                 || txtTelefono.getText().trim().isEmpty();
-
+        
     }
-
+    
     private void limpiarCampos() {
         txtApellido.setText(null);
         txtEmail.setText(null);
@@ -150,13 +149,13 @@ public class frmtestcliente extends javax.swing.JFrame {
         txtNombre.setText(null);
         txtSaldo.setText(null);
         txtTelefono.setText(null);
-
+        
         txtNombre.requestFocus();
     }
-
+    
     private void Eliminar() {
         int id;
-
+        
         if (txtID.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(rootPane, "Por favor digita el ID");
         } else {
@@ -167,7 +166,7 @@ public class frmtestcliente extends javax.swing.JFrame {
                 if (conexion.getAutoCommit()) {
                     conexion.setAutoCommit(false);
                 }
-
+                
                 id = Integer.parseInt(txtID.getText().trim());
                 cliente = new Cliente(id);
 
@@ -178,7 +177,7 @@ public class frmtestcliente extends javax.swing.JFrame {
                 conexion.commit();
                 JOptionPane.showMessageDialog(rootPane, "Cliente con el ID => " + id
                         + "\nEliminado");
-
+                
                 txtID.setText(null);
 
                 // listarDatos();
@@ -191,11 +190,11 @@ public class frmtestcliente extends javax.swing.JFrame {
                 }
             }
         }
-
+        
     }
-
+    
     private void modificar() {
-
+        
         if (txtID.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(rootPane, "Por favor Ingresar el ID a modificar");
         } else if (comprobarCampos()) {
@@ -223,13 +222,13 @@ public class frmtestcliente extends javax.swing.JFrame {
                 telefono = txtTelefono.getText().trim();
                 saldo = Double.parseDouble(txtSaldo.getText().trim());
                 id = Integer.parseInt(txtID.getText().trim());
-
+                
                 cliente = new Cliente(id, nombre, apellido, email, telefono, saldo);
                 clienteDao.modificar(cliente);
-
+                
                 conexion.commit();
                 JOptionPane.showMessageDialog(rootPane, "Cliente con el ID: " + id + "\n Modificado");
-
+                
                 limpiarCampos();
                 // btnRegistrar.setVisible(false);
 
@@ -271,25 +270,26 @@ public class frmtestcliente extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         btnConsultar = new javax.swing.JButton();
+        btnLimpiarListado = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         txtNombre.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-        txtNombre.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(41, 43, 45)), "Digite su nombre:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
+        txtNombre.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Digite su nombre:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
 
         txtApellido.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-        txtApellido.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(41, 43, 45)), "Digite su Apellido:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
+        txtApellido.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Digite su Apellido:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
 
         txtEmail.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-        txtEmail.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(41, 43, 45)), "Digite su Email:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
+        txtEmail.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Digite su Email:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
 
         txtTelefono.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-        txtTelefono.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(41, 43, 45)), "Digite su Telefono:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
+        txtTelefono.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Digite su Telefono:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
 
         txtSaldo.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-        txtSaldo.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(41, 43, 45)), "Digite su Saldo:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
+        txtSaldo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Digite su Saldo:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
 
         btnRegistrar.setFont(new java.awt.Font("Arial Black", 0, 14)); // NOI18N
         btnRegistrar.setText("Registrar");
@@ -347,7 +347,7 @@ public class frmtestcliente extends javax.swing.JFrame {
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         txtID.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-        txtID.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(41, 43, 45)), "Digite el ID para Modificar O Eliminar:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
+        txtID.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Digite el ID para Modificar O Eliminar:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Cascadia Code", 0, 12))); // NOI18N
 
         btnModificar.setFont(new java.awt.Font("Arial Black", 0, 14)); // NOI18N
         btnModificar.setText("Moficar");
@@ -407,6 +407,14 @@ public class frmtestcliente extends javax.swing.JFrame {
             }
         });
 
+        btnLimpiarListado.setFont(new java.awt.Font("Arial Black", 0, 14)); // NOI18N
+        btnLimpiarListado.setText("Limpiar Listado");
+        btnLimpiarListado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimpiarListadoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -424,8 +432,10 @@ public class frmtestcliente extends javax.swing.JFrame {
                                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jScrollPane1)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(147, 147, 147)
-                                .addComponent(btnConsultar)))
+                                .addGap(73, 73, 73)
+                                .addComponent(btnConsultar)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnLimpiarListado)))
                         .addGap(0, 18, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -442,7 +452,9 @@ public class frmtestcliente extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnConsultar)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnConsultar)
+                            .addComponent(btnLimpiarListado))))
                 .addGap(30, 30, 30))
         );
 
@@ -463,7 +475,7 @@ public class frmtestcliente extends javax.swing.JFrame {
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
         // TODO add your handling code here:
         registrarDatos();
-
+        
 
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
@@ -486,6 +498,10 @@ public class frmtestcliente extends javax.swing.JFrame {
         listarDatos();
         //btnRegistrar.setVisible(true);
     }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void btnLimpiarListadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarListadoActionPerformed
+        jTextArea1.setText("");
+    }//GEN-LAST:event_btnLimpiarListadoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -525,6 +541,7 @@ public class frmtestcliente extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConsultar;
     private javax.swing.JButton btnEliminar;
+    private javax.swing.JButton btnLimpiarListado;
     private javax.swing.JButton btnModificar;
     private javax.swing.JButton btnRegistrar;
     private javax.swing.JLabel jLabel1;
